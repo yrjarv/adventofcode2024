@@ -1,4 +1,4 @@
-reports = []
+reports: list[list[int]] = []
 with open("input", "r") as file:
     for line in file:
         report_str = line.strip().split(" ")
@@ -28,4 +28,17 @@ def valid_report(report: list[int]) -> bool:
 
 # Part 1
 valid_reports: list[list[int]] = [report for report in reports if valid_report(report)]
+print(f"Valid reports: {len(valid_reports)}")
+
+# Part 2
+valid_reports = []
+for report in reports:
+    if valid_report(report):
+        valid_reports.append(report)
+        continue
+    for i, element in enumerate(report):
+        new_report = report[:i] + report[i+1:]
+        if valid_report(new_report):
+            valid_reports.append(new_report)
+            break
 print(f"Valid reports: {len(valid_reports)}")
