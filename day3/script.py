@@ -28,3 +28,16 @@ for i, _ in enumerate(memory[:-3]):
         continue
     mul_indexes.append(i)
 print(f"Sum part 1: {find_and_sum_muls(mul_indexes, memory)}")
+
+# Part 2
+mul_indexes: list[int] = []
+enabled = True
+for i, _ in enumerate(memory[:-3]):
+    if memory[i:i+4] == "do()":
+        enabled = True
+    if memory[i:i+7] == "don't()":
+        enabled = False
+    if memory[i:i+4] != "mul(" or not enabled:
+        continue
+    mul_indexes.append(i)
+print(f"Sum part 2: {find_and_sum_muls(mul_indexes, memory)}")
