@@ -36,7 +36,8 @@ class Guard:
         self.position = position
         self.grid = grid
         self.is_outside_area = self.grid.is_outside_area(self.position)
-        self.visited_coords: list[tuple[int, int]] = []
+        # self.visisted_coords has the format [(velocity, position)]
+        self.visited_coords: list[tuple[tuple[int, int], tuple[int, int]]] = []
 
         self.velocity: tuple[int, int] = (0, 0)
         match character:
@@ -85,9 +86,9 @@ class Guard:
 
         self.position = new_coords
 
-        if self.position in self.visited_coords:
+        if (self.velocity, self.position) in self.visited_coords:
             return
-        self.visited_coords.append(self.position)
+        self.visited_coords.append((self.velocity, self.position))
     
     def get_unique_positions(self) -> int:
         return len(self.visited_coords)
@@ -103,15 +104,53 @@ def get_guard(filename: str) -> Guard:
                     return guard
     return guard
 
-def main(filename: str) -> None:
+def main1(filename: str) -> list[tuple[int, int]]:
+    # NB! Doesn't work after changes made to the Guard class for part 2
     guard = get_guard(filename)
    
     while not guard.is_outside_area:
         guard.move()
     
-    print(guard.get_unique_positions())
+    print(f"Unique positions: {guard.get_unique_positions()}")
+
+    return [coords[1] for coords in guard.visited_coords]
+
+def main2(filename: str) -> None:
+    successful_obstacles = 0
+
+    guard = get_guard(filename)
+
+    start_position = guard.position
+    start_velocity = guard.velocity
+
+    cells_searched = 0
+    relevant_positions = main1(filename)
+    total_cells = len(relevant_positions)
+
+    for position in relevant_positions:
+        cell = guard.grid.get_cell(position)
+        cells_searched += 1
+        if cell.is_obstacle:
+            continue
+        cell.is_obstacle = True
+        while not guard.is_outside_area:
+            if (guard.velocity, guard.position) in guard.visited_coords[:-1]:
+                successful_obstacles += 1
+                break
+            guard.move()
+        
+        # Revert to original state
+        cell.is_obstacle = False
+        guard = Guard("^", start_position, guard.grid)
+        guard.velocity = start_velocity
+
+        print(f"{cells_searched} / {total_cells}")
+        print(f"({100*cells_searched/total_cells:.2f}%)")
+
+    print(f"Successful obstacles: {successful_obstacles}")
 
 if __name__ == "__main__":
-    main("input.txt")
+    main1("input.txt")
+    main2("input.txt")
     
     
